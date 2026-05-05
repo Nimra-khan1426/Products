@@ -81,8 +81,8 @@ const PRODUCTS_DATA = [
         "variants": ["XS", "S", "M", "L", "XL"],
         "colors": [
             {
-                "name": "Natural Beige",
-                "code": "#F5F5DC"
+                "name": "Light Pink",
+                "code": "#E0B5AB"
             },
            
         ]

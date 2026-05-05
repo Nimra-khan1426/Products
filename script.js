@@ -145,7 +145,7 @@ function openProductDetail(productId) {
     // Front image for detail page (first image from array)
     const mainDetailImage = Array.isArray(product.front_image) ? product.front_image[0] : product.front_image;
     
-    // If product is out of stock, disable buttons by adding disabled attribute and class
+
     const isOutOfStock = !product.in_stock;
     
     detailOverlay.innerHTML = `
