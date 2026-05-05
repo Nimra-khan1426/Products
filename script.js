@@ -145,6 +145,9 @@ function openProductDetail(productId) {
     // Front image for detail page (first image from array)
     const mainDetailImage = Array.isArray(product.front_image) ? product.front_image[0] : product.front_image;
     
+    // If product is out of stock, disable buttons by adding disabled attribute and class
+    const isOutOfStock = !product.in_stock;
+    
     detailOverlay.innerHTML = `
         <div class="detail-container">
             <button class="back-btn" id="closeDetailBtn">← Back to Collection</button>
@@ -183,7 +186,7 @@ function openProductDetail(productId) {
                         <span class="size-label">Select Size:</span>
                         <div class="size-buttons" id="detailSizeButtons">
                             ${sizes.map(sz => `
-                                <button class="size-btn ${selectedSize === sz ? 'selected-size' : ''}" data-size="${sz}">${sz}</button>
+                                <button class="size-btn ${selectedSize === sz ? 'selected-size' : ''}" data-size="${sz}" ${isOutOfStock ? 'disabled style="opacity:0.5; cursor:not-allowed;"' : ''}>${sz}</button>
                             `).join('')}
                         </div>
                     </div>
@@ -194,8 +197,8 @@ function openProductDetail(productId) {
                     </div>
                     
                     <div class="cart-buttons">
-                        <button class="btn-add-cart" id="detailAddToCart">Add To Cart</button>
-                        <button class="btn-checkout" id="detailCheckoutNow">Checkout Now</button>
+                        <button class="btn-add-cart" id="detailAddToCart" ${isOutOfStock ? 'disabled style="background:#ccc; cursor:not-allowed;"' : ''}>Add To Cart</button>
+                        <button class="btn-checkout" id="detailCheckoutNow" ${isOutOfStock ? 'disabled style="background:#ccc; cursor:not-allowed;"' : ''}>Checkout Now</button>
                     </div>
                     <div class="delivery-note">Delivery & Returns: Free shipping • 15-day exchange • T&C apply</div>
                 </div>
@@ -235,36 +238,39 @@ function openProductDetail(productId) {
     const defaultChip = Array.from(colorChips).find(c => c.getAttribute('data-color') === selectedColorName);
     if (defaultChip) defaultChip.classList.add('active-color');
     
-    const sizeBtns = document.querySelectorAll('#detailSizeButtons .size-btn');
-    sizeBtns.forEach(btn => {
-        btn.addEventListener('click', () => {
-            const sz = btn.getAttribute('data-size');
-            selectedSize = sz;
-            sizeBtns.forEach(b => b.classList.remove('selected-size'));
-            btn.classList.add('selected-size');
+    // Size selection - only if product is in stock
+    if (product.in_stock) {
+        const sizeBtns = document.querySelectorAll('#detailSizeButtons .size-btn');
+        sizeBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const sz = btn.getAttribute('data-size');
+                selectedSize = sz;
+                sizeBtns.forEach(b => b.classList.remove('selected-size'));
+                btn.classList.add('selected-size');
+            });
         });
-    });
+    }
     
     const addCartDetail = document.getElementById('detailAddToCart');
-    if (addCartDetail) {
+    if (addCartDetail && product.in_stock) {
         addCartDetail.addEventListener('click', () => {
-            if (product.in_stock) {
-                const finalPrice = product.sale_price ? product.sale_price : product.price;
-                alert(`🛍 Added to cart:\n${product.name}\nColor: ${selectedColorName}\nSize: ${selectedSize}\nPrice: ${formatPrice(finalPrice)}`);
-            } else {
-                alert('This product is currently out of stock.');
-            }
+            const finalPrice = product.sale_price ? product.sale_price : product.price;
+            alert(`🛍 Added to cart:\n${product.name}\nColor: ${selectedColorName}\nSize: ${selectedSize}\nPrice: ${formatPrice(finalPrice)}`);
+        });
+    } else if (addCartDetail && !product.in_stock) {
+        addCartDetail.addEventListener('click', () => {
+            alert('This product is currently out of stock.');
         });
     }
     
     const checkoutDetail = document.getElementById('detailCheckoutNow');
-    if (checkoutDetail) {
+    if (checkoutDetail && product.in_stock) {
         checkoutDetail.addEventListener('click', () => {
-            if (product.in_stock) {
-                alert(`Proceeding to checkout:\n${product.name} (${selectedColorName}, ${selectedSize})`);
-            } else {
-                alert('Cannot checkout: Item is out of stock.');
-            }
+            alert(`Proceeding to checkout:\n${product.name} (${selectedColorName}, ${selectedSize})`);
+        });
+    } else if (checkoutDetail && !product.in_stock) {
+        checkoutDetail.addEventListener('click', () => {
+            alert('Cannot checkout: Item is out of stock.');
         });
     }
 }
